@@ -12,7 +12,7 @@
         v-model="cityName"
         @keydown.enter="
           getData();
-          getPhotos();
+          getPhotos(cityName);
         "
         name="weather"
         id="weather"
@@ -21,77 +21,31 @@
         class="weather__search_btn"
         @click="
           getData();
-          getPhotos();
+          getPhotos(cityName);
         "
       >
         Search
       </button>
     </div>
     <div class="weather__item-wrapper">
-      <div
-        class="weather__item"
+      <WeatherCard
         v-for="weather in weatherArray"
         :key="weather.cityName"
-        @click="getWeekData(weather.cityName)"
-      >
-        <h3 class="weather__item_name">{{ weather.cityName }}</h3>
-        <div class="weather__item_ico-wrapper">
-          <img :src="weather.weatherIcon" alt="Ico" class="weather__item_ico" />
-        </div>
-        <h2 class="weather__item_deg">{{ weather.temperature }}C</h2>
-
-        <h3 class="weather__item_outside">{{ weather.condition }}</h3>
-        <p class="weather__item_feelslike">
-          Feels like: {{ weather.feelsLike }}C
-        </p>
-        <button
-          class="weather__item_delete-btn"
-          @click.stop="deleteWeather(weather)"
-        >
-          Delete
-        </button>
-      </div>
+        @click="
+          getWeekData(weather.cityName);
+          getPhotos(weather.cityName);
+        "
+        :weather="weather"
+      />
     </div>
     <div v-if="showPopup" class="popup">
-      <div class="popup__container">
-        <div class="popup__exit" @click="showPopup = false">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            x="0px"
-            y="0px"
-            class="popup__exit_btn"
-            viewBox="0 0 50 50"
-          >
-            <path
-              d="M 25 2 C 12.309534 2 2 12.309534 2 25 C 2 37.690466 12.309534 48 25 48 C 37.690466 48 48 37.690466 48 25 C 48 12.309534 37.690466 2 25 2 z M 25 4 C 36.609534 4 46 13.390466 46 25 C 46 36.609534 36.609534 46 25 46 C 13.390466 46 4 36.609534 4 25 C 4 13.390466 13.390466 4 25 4 z M 32.990234 15.986328 A 1.0001 1.0001 0 0 0 32.292969 16.292969 L 25 23.585938 L 17.707031 16.292969 A 1.0001 1.0001 0 0 0 16.990234 15.990234 A 1.0001 1.0001 0 0 0 16.292969 17.707031 L 23.585938 25 L 16.292969 32.292969 A 1.0001 1.0001 0 1 0 17.707031 33.707031 L 25 26.414062 L 32.292969 33.707031 A 1.0001 1.0001 0 1 0 33.707031 32.292969 L 26.414062 25 L 33.707031 17.707031 A 1.0001 1.0001 0 0 0 32.990234 15.986328 z"
-            ></path>
-          </svg>
-        </div>
-        <h2 class="popup__title">Weeekly weather forecast</h2>
-        <div class="popup__day_wrapper">
-          <div
-            class="popup__day_item"
-            v-for="day in weatherItemForecast"
-            :key="day.dayName"
-          >
-            <div class="popup__day_item-start">
-              <h3 class="popup__day_item-date">{{ day.dayName }}</h3>
-              <div class="popup__day_item-img-wrapper">
-                <img :src="day.weatherIcon" class="popup__day_item-img" />
-              </div>
-              <h4 class="popup__day_item-suptitle">
-                {{ day.weatherIconText }}
-              </h4>
-            </div>
-            <p class="popup__day_item-maxtemp">Max temp: {{ day.maxTemp }}</p>
-            <p class="popup__day_item-mintemp">Min temp: {{ day.minTemp }}</p>
-          </div>
-        </div>
-      </div>
+      <WeatherPopup @close="showPopup = false" :weatherItemForecast="weatherItemForecast" />
     </div>
   </div>
 </template>
 <script>
+import WeatherCard from "./components/weather-card.vue";
+import WeatherPopup from "./components/Vue-popup.vue";
 export default {
   data() {
     return {
@@ -101,6 +55,10 @@ export default {
       showPopup: false,
       weatherBackground: "",
     };
+  },
+  components: {
+    WeatherCard,
+    WeatherPopup,
   },
 
   methods: {
@@ -158,10 +116,10 @@ export default {
       }
     },
 
-    async getPhotos() {
+    async getPhotos(cityName) {
       try {
         const res = await fetch(
-          `https://api.unsplash.com/search/photos/?client_id=PXg14idWDH2ooJ01s2VZcJ85Vthonkzd4TDHSciYNN0&query=${this.cityName}`
+          `https://api.unsplash.com/search/photos/?client_id=PXg14idWDH2ooJ01s2VZcJ85Vthonkzd4TDHSciYNN0&query=${cityName}`
         );
         const data = await res.json();
         this.weatherBackground = data.results[0].links.download;
